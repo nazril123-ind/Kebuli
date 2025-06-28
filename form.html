@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form Pembelian - WIRA UMP</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    }
+
+    .container h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    .container p {
+      text-align: center;
+      color: #7f8c8d;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #34495e;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ecf0f1;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: #f9f9f9;
+      transition: 0.3s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #3498db;
+      background: #fff;
+      outline: none;
+    }
+
+    .quantity-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quantity-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #3498db;
+      color: #3498db;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .quantity-btn:hover {
+      background: #3498db;
+      color: white;
+    }
+
+    .price-display {
+      margin-top: 15px;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-radius: 10px;
+    }
+
+    .file-input {
+      padding: 12px;
+      border: 2px dashed #ccc;
+      text-align: center;
+      background: #f0f0f0;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .file-input:hover {
+      background: #ebf3fd;
+      border-color: #3498db;
+    }
+
+    .alert {
+      display: none;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .alert-success {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .alert-error {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .spinner {
+      display: none;
+      margin: 15px auto;
+      border: 4px solid #ecf0f1;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Form Pembelian</h2>
+    <p>Silakan isi data dengan benar untuk melakukan pembelian</p>
+
+    <div id="alertSuccess" class="alert alert-success">✅ Pesanan berhasil dikirim!</div>
+    <div id="alertError" class="alert alert-error">❌ Terjadi kesalahan saat mengirim.</div>
+    <div class="spinner" id="loadingSpinner"></div>
+
+    <form id="purchaseForm">
+      <div class="form-group">
+        <label for="customer_name">Nama Lengkap</label>
+        <input type="text" id="customer_name" name="customer_name" required placeholder="Masukkan nama Anda" />
+      </div>
+
+      <div class="form-group">
+        <label for="customer_phone">No WhatsApp</label>
+        <input type="tel" id="customer_phone" name="customer_phone" required placeholder="08xxxxxxxxxx" />
+      </div>
+
+      <div class="form-group">
+        <label for="customer_email">Email</label>
+        <input type="email" id="customer_email" name="customer_email" required placeholder="email@example.com" />
+      </div>
+
+      <div class="form-group">
+        <label for="customer_address">Alamat Lengkap (link Google Maps)</label>
+        <textarea id="customer_address" name="customer_address" required placeholder="Masukan Link Google Maps"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="selected_product">Pilih Produk</label>
+        <select id="selected_product" name="selected_product" required>
+          <option value="" disabled selected>-- Pilih Produk --</option>
+          <option value="Produk A" data-price="12000">Kebuli Ayam Krispi - Rp 12.000</option>
+          <option value="Produk B" data-price="12000">Kebuli Ayam Ori - Rp 12.000</option>
+          <option value="Produk B" data-price="12000">Kebuli Telur Krispi- Rp 12.000</option>
+          <option value="Produk B" data-price="12000">Kebuli Ayam Katsu- Rp 12.000</option>
+          <option value="Produk B" data-price="12000">Kebuli Ayam Geprek- Rp 12.000</option>
+          <option value="Produk B" data-price="15000">Briyani Ayam Goreng- Rp 15.000</option>
+          
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Jumlah</label>
+        <div class="quantity-wrapper">
+          <button type="button" class="quantity-btn" id="decreaseBtn">-</button>
+          <input type="number" id="order_quantity" name="order_quantity" value="1" min="1" max="100" readonly />
+          <button type="button" class="quantity-btn" id="increaseBtn">+</button>
+        </div>
+      </div>
+
+      <div class="price-display" id="priceDisplay">Total: Rp 0</div>
+      <input type="hidden" id="total_price" name="total_price" value="0" />
+
+      <div class="form-group">
+        <label for="payment_method">Metode Pembayaran</label>
+        <select id="payment_method" name="payment_method" required>
+          <option value="">-- Pilih Metode --</option>
+          <option value="Transfer Bank">Transfer Bank (BRI 92030838080)</option>
+          <option value="E-Wallet">E-Wallet (DANA 08212782891)</option>
+          <option value="COD">COD</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="proofGroup" style="display: none;">
+        <label for="payment_proof">Bukti Pembayaran</label>
+        <input type="file" id="payment_proof" name="payment_proof" accept="image/*,.pdf" />
+      </div>
+
+      <div class="form-group">
+        <label for="order_notes">Catatan Tambahan</label>
+        <textarea id="order_notes" name="order_notes" placeholder="Catatan jika ada..."></textarea>
+      </div>
+
+      <button type="submit">Kirim Pesanan</button>
+    </form>
+  </div>
+
+  <script>
+    emailjs.init("14iny5qTVgtumJdCU"); // Ganti dengan Public Key EmailJS Anda
+
+    const form = document.getElementById("purchaseForm");
+    const product = document.getElementById("selected_product");
+    const quantityInput = document.getElementById("order_quantity");
+    const priceDisplay = document.getElementById("priceDisplay");
+    const totalPriceInput = document.getElementById("total_price");
+    const decreaseBtn = document.getElementById("decreaseBtn");
+    const increaseBtn = document.getElementById("increaseBtn");
+    const paymentMethod = document.getElementById("payment_method");
+    const proofGroup = document.getElementById("proofGroup");
+    const spinner = document.getElementById("loadingSpinner");
+    const alertSuccess = document.getElementById("alertSuccess");
+    const alertError = document.getElementById("alertError");
+
+    function updatePrice() {
+      const selected = product.options[product.selectedIndex];
+      const price = selected.getAttribute("data-price");
+      const qty = parseInt(quantityInput.value);
+      if (price && qty) {
+        const total = qty * parseInt(price);
+        priceDisplay.textContent = `Total: Rp ${total.toLocaleString('id-ID')}`;
+        totalPriceInput.value = total;
+      }
+    }
+
+    product.addEventListener("change", updatePrice);
+    quantityInput.addEventListener("input", updatePrice);
+
+    decreaseBtn.addEventListener("click", () => {
+      let qty = parseInt(quantityInput.value);
+      if (qty > 1) {
+        quantityInput.value = qty - 1;
+        updatePrice();
+      }
+    });
+
+    increaseBtn.addEventListener("click", () => {
+      let qty = parseInt(quantityInput.value);
+      if (qty < 100) {
+        quantityInput.value = qty + 1;
+        updatePrice();
+      }
+    });
+
+    paymentMethod.addEventListener("change", () => {
+      proofGroup.style.display = paymentMethod.value === "COD" ? "none" : "block";
+    });
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      spinner.style.display = "block";
+      alertSuccess.style.display = "none";
+      alertError.style.display = "none";
+
+      // Prepare template parameters
+      const templateParams = {
+        customer_name: document.getElementById('customer_name').value,
+        customer_email: document.getElementById('customer_email').value,
+        customer_phone: document.getElementById('customer_phone').value,
+        customer_address: document.getElementById('customer_address').value,
+        selected_product: document.getElementById('selected_product').value,
+        order_quantity: document.getElementById('order_quantity').value,
+        total_price: document.getElementById('total_price').value,
+        payment_method: document.getElementById('payment_method').value,
+        order_notes: document.getElementById('order_notes').value || 'Tidak ada catatan'
+      };
+
+      emailjs.send("service_9y825ub", "template_5nvxxwa", templateParams)
+        .then(() => {
+          spinner.style.display = "none";
+          alertSuccess.style.display = "block";
+          form.reset();
+          priceDisplay.textContent = "Total: Rp 0";
+          totalPriceInput.value = "0";
+          proofGroup.style.display = "none";
+        }, (error) => {
+          spinner.style.display = "none";
+          alertError.style.display = "block";
+          console.error('EmailJS Error:', error);
+        });
+    });
+  </script>
+</body>
+</html>
